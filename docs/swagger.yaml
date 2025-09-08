@@ -1,0 +1,103 @@
+definitions:
+  models.Application:
+    properties:
+      createdAt:
+        type: string
+      fileURL:
+        type: string
+      id:
+        type: integer
+      status:
+        type: string
+      text:
+        type: string
+      updatedAt:
+        type: string
+      userID:
+        type: integer
+    type: object
+  models.CreateApplicationRequest:
+    properties:
+      file_url:
+        type: string
+      status:
+        type: string
+      text:
+        type: string
+    required:
+    - file_url
+    - text
+    type: object
+host: localhost:8081
+info:
+  contact: {}
+  description: API приложения Application с JWT авторизацией
+  title: Application service
+  version: "1.0"
+paths:
+  /api/applications:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Filter by user ID
+        in: query
+        name: user_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Application'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Gets all the applications
+      tags:
+      - UserApplication
+  /api/applications/store:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create Application
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateApplicationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Application successfully created
+          schema:
+            $ref: '#/definitions/models.Application'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create User Application
+      tags:
+      - UserApplication
+schemes:
+- http
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

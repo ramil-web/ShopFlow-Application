@@ -1,0 +1,41 @@
+version: "3.9"
+services:
+  application:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: application-db
+      DB_PORT: 5432
+      DB_USER: app_user
+      DB_PASSWORD: app_pass
+      DB_DATABASE: app_db
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+    ports:
+      - "8081:8081"
+    depends_on:
+      - application-db
+      - rabbitmq
+
+  application-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: app_pass
+      POSTGRES_DB: app_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - app-db-data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+
+volumes:
+  app-db-data:
