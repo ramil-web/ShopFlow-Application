@@ -17,3 +17,9 @@ type CreateApplicationRequest struct {
 	Status  string `json:"status"`
 	FileURL string `json:"file_url"  binding:"required"`
 }
+
+type UpdateApplicationRequest struct {
+	Text    string `json:"text"`
+	Status  string `json:"status"`
+	FileURL string `json:"file_url"`
+}

@@ -13,9 +13,20 @@ func RegisterApplicationRoutes(r *gin.Engine, appSvc *services.ApplicationServic
 	{
 		appGroup := api.Group("/applications")
 		appGroup.Use(middleware.AuthMiddleware())
-		{
-			appGroup.POST("/store", handlers.CreateApplicationHandler(appSvc, publisher))
-			appGroup.GET("", handlers.GetApplicationHandler(appSvc))
+
+		// создаём один экземпляр хендлера
+		h := &handlers.ApplicationHandler{
+			BaseHandler: &handlers.BaseHandler{
+				AppSvc:    appSvc,
+				Publisher: publisher,
+			},
 		}
+
+		// регистрируем методы структуры как обработчики
+		appGroup.POST("", h.CreateApplication)
+		appGroup.GET("", h.GetApplications)
+		appGroup.GET("/:id", h.GetApplicationById)
+		appGroup.DELETE("/:id", h.DeleteApplication)
+		appGroup.PATCH("/:id", h.UpdateApplication)
 	}
 }

@@ -49,3 +49,20 @@ func (s *ApplicationService) CreateApplication(userID uint, text, fileURL string
 func (s *ApplicationService) GetAll(UserID uint) ([]models.Application, error) {
 	return s.repo.GetAll(UserID)
 }
+
+func (s *ApplicationService) GetApplicationById(id uint) (*models.Application, error) {
+	return s.repo.GetApplicationById(id)
+}
+
+func (s *ApplicationService) DeleteApplication(id uint) error {
+	return s.repo.DeleteApplicationById(id)
+}
+
+func (s *ApplicationService) UpdateApplication(req models.UpdateApplicationRequest, Id uint) (*models.Application, error) {
+	app := models.Application{
+		Text:    req.Text,
+		FileURL: req.FileURL,
+		Status:  req.Status,
+	}
+	return s.repo.UpdateApplication(app, Id)
+}

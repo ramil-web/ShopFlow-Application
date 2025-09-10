@@ -31,7 +31,7 @@ const docTemplate = `{
                 "tags": [
                     "UserApplication"
                 ],
-                "summary": "Gets all the applications",
+                "summary": "Gets all the Applications",
                 "parameters": [
                     {
                         "type": "integer",
@@ -44,10 +44,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Application"
-                            }
+                            "$ref": "#/definitions/models.Application"
                         }
                     },
                     "400": {
@@ -60,9 +57,7 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/api/applications/store": {
+            },
             "post": {
                 "security": [
                     {
@@ -78,7 +73,7 @@ const docTemplate = `{
                 "tags": [
                     "UserApplication"
                 ],
-                "summary": "Create User Application",
+                "summary": "Create Application",
                 "parameters": [
                     {
                         "description": "Create Application",
@@ -99,6 +94,161 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/applications/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UserApplication"
+                ],
+                "summary": "Gets Application by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Данные одной заявки",
+                        "schema": {
+                            "$ref": "#/definitions/models.Application"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UserApplication"
+                ],
+                "summary": "Delete Application by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UserApplication"
+                ],
+                "summary": "Update Application",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Application request with user_id, text и status",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateApplicationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Application"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -143,6 +293,20 @@ const docTemplate = `{
                 "file_url",
                 "text"
             ],
+            "properties": {
+                "file_url": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UpdateApplicationRequest": {
+            "type": "object",
             "properties": {
                 "file_url": {
                     "type": "string"

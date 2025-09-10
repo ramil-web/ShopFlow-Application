@@ -28,6 +28,15 @@ definitions:
     - file_url
     - text
     type: object
+  models.UpdateApplicationRequest:
+    properties:
+      file_url:
+        type: string
+      status:
+        type: string
+      text:
+        type: string
+    type: object
 host: localhost:8081
 info:
   contact: {}
@@ -50,9 +59,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/models.Application'
-            type: array
+            $ref: '#/definitions/models.Application'
         "400":
           description: Bad Request
           schema:
@@ -61,10 +68,9 @@ paths:
             type: object
       security:
       - BearerAuth: []
-      summary: Gets all the applications
+      summary: Gets all the Applications
       tags:
       - UserApplication
-  /api/applications/store:
     post:
       consumes:
       - application/json
@@ -90,7 +96,105 @@ paths:
             type: object
       security:
       - BearerAuth: []
-      summary: Create User Application
+      summary: Create Application
+      tags:
+      - UserApplication
+  /api/applications/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete Application by ID
+      tags:
+      - UserApplication
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Данные одной заявки
+          schema:
+            $ref: '#/definitions/models.Application'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Gets Application by ID
+      tags:
+      - UserApplication
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Application request with user_id, text и status
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateApplicationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Application'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update Application
       tags:
       - UserApplication
 schemes:
