@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+	"fmt"
 	"shopflow/application/models"
 	"shopflow/application/publisher"
 	"shopflow/application/repository"
@@ -9,45 +11,53 @@ import (
 type ApplicationService struct {
 	repo      *repository.ApplicationRepository
 	publisher *publisher.ApplicationPublisher
+	auth      AuthClient
 }
 
-func NewApplicationService(repo *repository.ApplicationRepository, publisher *publisher.ApplicationPublisher) *ApplicationService {
-	return &ApplicationService{repo: repo, publisher: publisher}
+func NewApplicationService(repo *repository.ApplicationRepository, publisher *publisher.ApplicationPublisher, auth AuthClient) *ApplicationService {
+	return &ApplicationService{
+		repo:      repo,
+		publisher: publisher,
+		auth:      auth,
+	}
 }
 
-func (s *ApplicationService) CreateApplication(userID uint, text, fileURL string, Status string) (models.Application, error) {
+func (s *ApplicationService) CreateApplication(ctx context.Context, userID uint, token, text, fileURL, status string) (models.Application, error) {
+	if s.auth != nil {
+		valid, _, err := s.auth.VerifyToken(uint32(userID), token)
+		if err != nil || !valid {
+			return models.Application{}, fmt.Errorf("invalid token")
+		}
+	}
+
 	app := models.Application{
 		UserID:  userID,
 		Text:    text,
 		FileURL: fileURL,
-		Status: func() string {
-			if Status == "" {
-				return "new"
-			}
-			return Status
-		}(),
+		Status:  status,
+	}
+	if app.Status == "" {
+		app.Status = "new"
 	}
 
 	if err := s.repo.Create(&app); err != nil {
 		return models.Application{}, err
 	}
 
-	// событие в шину
 	if s.publisher != nil {
-		msg := publisher.ApplicationCreatedMessage{
+		_ = s.publisher.PublishApplicationCreated(publisher.ApplicationCreatedMessage{
 			ID:     app.ID,
 			UserID: app.UserID,
 			Text:   app.Text,
 			File:   app.FileURL,
-		}
-		_ = s.publisher.PublishApplicationCreated(msg)
+		})
 	}
 
 	return app, nil
 }
 
-func (s *ApplicationService) GetAll(UserID uint) ([]models.Application, error) {
-	return s.repo.GetAll(UserID)
+func (s *ApplicationService) GetAll(userID uint) ([]models.Application, error) {
+	return s.repo.GetAll(userID)
 }
 
 func (s *ApplicationService) GetApplicationById(id uint) (*models.Application, error) {
@@ -58,11 +68,11 @@ func (s *ApplicationService) DeleteApplication(id uint) error {
 	return s.repo.DeleteApplicationById(id)
 }
 
-func (s *ApplicationService) UpdateApplication(req models.UpdateApplicationRequest, Id uint) (*models.Application, error) {
+func (s *ApplicationService) UpdateApplication(req models.UpdateApplicationRequest, id uint) (*models.Application, error) {
 	app := models.Application{
 		Text:    req.Text,
 		FileURL: req.FileURL,
 		Status:  req.Status,
 	}
-	return s.repo.UpdateApplication(app, Id)
+	return s.repo.UpdateApplication(app, id)
 }
