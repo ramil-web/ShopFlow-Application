@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "shopflow/authpb";
+
+// Сообщение запроса авторизации
+message AuthRequest {
+  uint32 user_id = 1;
+  string token = 2;
+}
+
+// Сообщение ответа авторизации
+message AuthResponse {
+  bool valid = 1;
+  string email = 2;
+}
+
+// gRPC сервис для Auth
+service AuthService {
+  // Проверка токена пользователя
+  rpc VerifyToken(AuthRequest) returns (AuthResponse);
+}

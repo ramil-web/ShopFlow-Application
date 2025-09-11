@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"shopflow/application/models"
-	_ "shopflow/application/publisher"
 	"shopflow/application/services"
 	"strconv"
 
@@ -40,9 +39,12 @@ func (h *ApplicationHandler) CreateApplication(c *gin.Context) {
 	}
 
 	userID := c.GetUint("user_id")
+	token := c.GetString("Authorization")
 	email := c.GetString("email")
 
-	app, err := h.AppSvc.CreateApplication(userID, req.Text, req.FileURL, req.Status)
+	ctx := c.Request.Context()
+
+	app, err := h.AppSvc.CreateApplication(ctx, userID, token, req.Text, req.FileURL, req.Status)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -74,8 +76,8 @@ func (h *ApplicationHandler) CreateApplication(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param user_id query int false "Filter by user ID"
-// @Success 200 {object} models.Application
-// @Failure 400  {object} map[string]string
+// @Success 200 {array} models.Application
+// @Failure 400 {object} map[string]string
 // @Router /api/applications [get]
 func (h *ApplicationHandler) GetApplications(c *gin.Context) {
 	userIDStr := c.Query("user_id")
@@ -109,7 +111,6 @@ func (h *ApplicationHandler) GetApplicationById(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		// любой нечисловой ID возвращаем 404
 		c.JSON(http.StatusNotFound, gin.H{"error": "Application not found"})
 		return
 	}
@@ -142,7 +143,6 @@ func (h *ApplicationHandler) DeleteApplication(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		// любой нечисловой ID возвращаем 404
 		c.JSON(http.StatusNotFound, gin.H{"error": "Application not found"})
 		return
 	}
@@ -159,14 +159,14 @@ func (h *ApplicationHandler) DeleteApplication(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-// UpdateApplication  godoc
+// UpdateApplication godoc
 // @Summary Update Application
 // @Tags UserApplication
 // @Security BearerAuth
 // @Accept json
 // @Produce json
 // @Param id path int true "Application ID"
-// @Param input body models.UpdateApplicationRequest true "Application request with user_id, text и status"
+// @Param input body models.UpdateApplicationRequest true "Application request with text, fileURL и status"
 // @Success 200 {object} models.Application
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
@@ -176,6 +176,7 @@ func (h *ApplicationHandler) UpdateApplication(c *gin.Context) {
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Application not found"})
+		return
 	}
 
 	var req models.UpdateApplicationRequest
@@ -183,6 +184,7 @@ func (h *ApplicationHandler) UpdateApplication(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
 	app, err := h.AppSvc.UpdateApplication(req, uint(id))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -192,5 +194,6 @@ func (h *ApplicationHandler) UpdateApplication(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Application not found"})
 		return
 	}
+
 	c.JSON(http.StatusOK, app)
 }
